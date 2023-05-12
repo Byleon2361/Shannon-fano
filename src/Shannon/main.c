@@ -5,7 +5,6 @@
 #include <libShannon/coder.h>
 int main(int argc, char* argv[])
 {
-    Value* arrayValue = malloc(sizeof(Value*) * 100);
     /*
     if (argc != 5)
     {
@@ -38,8 +37,7 @@ int main(int argc, char* argv[])
     }
     */
 
-    writeArrayInFile(arrayValue, "file.txt", "file.sfc");
+    compress("file.txt", "file.sfc");
     //readArrayInFile(arrayValue, "file.sfc", "res.txt");
-    free(arrayValue);
     return 0;
 }
