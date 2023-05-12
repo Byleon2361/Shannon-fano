@@ -1,15 +1,19 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-int main(int argc, char *argv[])
+#include <libShannon/coder.h>
+int main(int argc, char* argv[])
 {
+    Value* arrayValue = malloc(sizeof(Value*) * 100);
+    /*
     if (argc != 5)
     {
         puts("The number of arguments passed must be three");
         return 0;
     }
-    const char *command = argv[1];//Команда  -c - copmress; -d - decompress
-    const char *output = argv[2]; // -o - Указывает на имя выходного файла
+    const char *command = argv[1]; // Команда  -c - copmress; -d - decompress
+    const char *output = argv[2];  // -o - Указывает на имя выходного файла
     const char *firstFile = argv[3];
     const char *secondFile = argv[4];
 
@@ -23,14 +27,19 @@ int main(int argc, char *argv[])
     }
     else if (strcmp(command, "-d") == 0)
     {
-        if (decompress_file(firstFile, SecondFile) != 0)
+        if (decompress_file(firstFile, secondFile) != 0)
         {
             printf("Не удалось откыть файлы\n");
         }
     }
     else
     {
-	pritnf("Введен неверный ключ\n");
+        pritnf("Введен неверный ключ\n");
     }
+    */
+
+    writeArrayInFile(arrayValue, "file.txt", "file.sfc");
+    //readArrayInFile(arrayValue, "file.sfc", "res.txt");
+    free(arrayValue);
     return 0;
 }
