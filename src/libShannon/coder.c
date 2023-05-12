@@ -2,52 +2,59 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <libShannon/coder.h>
-void merge(Value* arr, int low, int mid, int high)
+void swap(Value* a, Value* b)
 {
-    int n1 = mid - low + 1;
-    int n2 = high - mid;
-
-    int L[n1], R[n2];
-
-    for (int i = 0; i < n1; i++)
-        L[i] = arr[low + i].count;
-    for (int j = 0; j < n2; j++)
-        R[j] = arr[mid + 1 + j].count;
-
-    int l = 0;
-    int r = 0;
-    int i = low;
-    while ((l < n1) && (r < n2)) {
-        if (L[l] <= R[r]) {
-            arr[i].count = L[l];
-            l++;
-        } else {
-            arr[i].count = R[r];
-            r++;
-        }
-        i++;
-    }
-    while (l < n1) {
-        arr[i].count = L[l];
-        l++;
-        i++;
-    }
-    while (r < n2) {
-        arr[i].count = R[r];
-        r++;
-        i++;
-    }
+    Value tmp = *a;
+    *a = *b;
+    *b = tmp;
 }
-void mergeSort(Value* arr, int low, int high)
+void oddEvenSort(Value* arr, int size)
 {
-    if (low < high) {
-        int mid = low + (high - low) / 2;
-        mergeSort(arr, low, mid);
-        mergeSort(arr, mid + 1, high);
-        merge(arr, low, mid, high);
+    int sorted = 0;
+    do {
+        sorted = 0;
+        for (int i = 1; i < size - 1; i += 2) {
+            if (arr[i].count < arr[i + 1].count) {
+                swap(&arr[i], &arr[i + 1]);
+                sorted = 1;
+            }
+        }
+        for (int i = 0; i < size - 1; i += 2) {
+            if (arr[i].count < arr[i + 1].count) {
+                swap(&arr[i], &arr[i + 1]);
+                sorted = 1;
+            }
+        }
+
+    } while (sorted);
+}
+
+int filesize(char* fileName)
+{
+    FILE* in = fopen(fileName, "r");
+    if (!in) {
+        printf("\nОшибка. Не удалось открыть первый файл. ");
+        return -1;
     }
+
+    fseek(in, 0L, SEEK_END);
+    int size = ftell(in);
+    rewind(in);
+
+    fclose(in);
+    return size;
+}
+uint8_t findValueInArray(Value* valueArr, int sizeValueArr, char sym)
+{
+    for (uint8_t i = 0; i < sizeValueArr; i++) {
+        if (valueArr[i].symbol == sym) {
+            return i;
+        }
+    }
+    return -1;
 }
 int compress(char* firstFile, char* secondFile)
 {
@@ -69,43 +76,42 @@ int compress(char* firstFile, char* secondFile)
 
     Value* valueArr = malloc(sizeof(Value) * 100);
     int sizeValueArr = 0;
-    char* text = malloc(sizeof(char));
-    int sizeText = 0;
-    // uint8_t* codingText = malloc(sizeof(uint8_t) * sizeValueArr);
+    char* text = malloc(sizeof(char) * filesize(firstFile) + 1);
 
-    writeDataStruct(valueArr, &sizeValueArr, firstFile, text, &sizeText);
-    printf("!%s!\n", text);
-
+    writeDataStruct(valueArr, &sizeValueArr, firstFile, text);
     for (int i = 0; i < sizeValueArr; i++) {
         printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
     }
-    printf("-------------------------------------------\n");
-    mergeSort(valueArr, 0, sizeValueArr);
+    printf("----------------------------------------------\n");
+    oddEvenSort(valueArr, sizeValueArr);
     for (int i = 0; i < sizeValueArr; i++) {
         printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
     }
-    // encode(valueArr, sizeValueArr, text, codingText);
+
+    uint8_t* codingText = malloc(sizeof(uint8_t) * sizeValueArr);
+    encode(valueArr, sizeValueArr, text, codingText);
+    printf("----------------------------------------------\n");
+    for (int i = 0; i < strlen(text); i++) {
+        printf("%d\n", codingText[i]);
+    }
 
     fwrite(valueArr, sizeof(Value), sizeValueArr, data);
     // write(codingText, sizeof(uint8_t), sizeValueArr, out);
 
     free(valueArr);
     free(text);
-    // free(codingText);
+    free(codingText);
 
     fclose(data);
     fclose(out);
 
     return 0;
 }
-Value* writeDataStruct(
-        Value* valueArr,
-        int* sizeValueArr,
-        char* firstFile,
-        char* text,
-        int* sizeText)
+Value*
+writeDataStruct(Value* valueArr, int* sizeValueArr, char* firstFile, char* text)
 {
-    char* ptr = malloc(sizeof(char));
+    int sizeText = 0;
+    char buf[1] = {0};
     FILE* in = fopen(firstFile, "r");
     if (!in) {
         printf("\nОшибка. Не удалось открыть первый файл. ");
@@ -113,35 +119,36 @@ Value* writeDataStruct(
     }
 
     int isfind = false;
-    while (fread(ptr, sizeof(char), 1, in) == 1) {
+    while (fread(buf, sizeof(char), 1, in) == 1) {
         Value newValue = {'\0', 0, 0};
         for (int i = 0; i < *sizeValueArr; i++) {
-            if (valueArr[i].symbol == *ptr) {
+            if (valueArr[i].symbol == *buf) {
                 valueArr[i].count++;
                 isfind = true;
                 break;
             }
         }
         if (!isfind) {
-            newValue.symbol = *ptr;
+            newValue.symbol = *buf;
             newValue.count++;
             valueArr[*sizeValueArr] = newValue;
             (*sizeValueArr)++;
         }
         isfind = false;
-        // text = realloc();
-        text[*sizeText] = *ptr;
-        (*sizeText)++;
+        text[sizeText] = *buf;
+        sizeText++;
     }
-    free(ptr);
     fclose(in);
     return valueArr;
 }
-int encode(Value* valueArr, int sizeValueArr, char* text, char* res)
+int encode(Value* valueArr, int sizeValueArr, char* text, uint8_t* res)
 {
-    printf("%s", text);
-}
+    for (int i = 0; i < strlen(text); i++) {
+        res[i] = findValueInArray(valueArr, sizeValueArr, text[i]);
+    }
 
+        return 0;
+}
 int decompress(Value* valueArr, char* firstFile, char* secondFile)
 {
     FILE* in;
