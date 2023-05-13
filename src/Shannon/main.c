@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libShannon/coder.h>
+#include <libShannon/compress.h>
+#include <libShannon/decompress.h>
 int main(int argc, char* argv[])
 {
     /*
