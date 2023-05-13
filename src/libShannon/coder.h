@@ -12,7 +12,6 @@ typedef struct value {
 int compress(char* firstFile, char* secondFile);
 Value* writeDataStruct(
         Value* valueArr, int* sizeValueArr, char* firstFile, char* text);
-uint8_t findValueInArray(Value* valueArr, int sizeValueArr, char sym);
 int encode(Value* valueArr, int sizeValueArr, char* text, uint8_t* res);
 void charcat(char s[], char t);
 void ShannonFano(Value* low, Value* high);

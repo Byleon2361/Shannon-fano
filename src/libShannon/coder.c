@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -47,15 +48,6 @@ static int filesize(char* fileName)
     fclose(in);
     return size;
 }
-uint8_t findValueInArray(Value* valueArr, int sizeValueArr, char sym)
-{
-    for (uint8_t i = 0; i < sizeValueArr; i++) {
-        if (valueArr[i].symbol == sym) {
-            return i;
-        }
-    }
-    return -1;
-}
 int compress(char* firstFile, char* secondFile)
 {
     FILE* data; // Хранит массив структур Value
@@ -87,7 +79,7 @@ int compress(char* firstFile, char* secondFile)
         printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
     }
 
-    uint8_t* codingText = malloc(sizeof(uint8_t) * sizeValueArr);
+    uint8_t* codingText = malloc(sizeof(uint8_t) * strlen(text));
     encode(valueArr, sizeValueArr, text, codingText);
     printf("----------------------------------------------\n");
     for (int i = 0; i < strlen(text); i++) {
@@ -119,7 +111,7 @@ writeDataStruct(Value* valueArr, int* sizeValueArr, char* firstFile, char* text)
 
     int isfind = false;
     while (fread(buf, sizeof(char), 1, in) == 1) {
-        Value newValue = {'\0', 0, NULL, 0};
+        Value newValue = {0, 0, 0, 0, 0};
         for (int i = 0; i < *sizeValueArr; i++) {
             if (valueArr[i].symbol == *buf) {
                 valueArr[i].count++;
@@ -143,10 +135,15 @@ writeDataStruct(Value* valueArr, int* sizeValueArr, char* firstFile, char* text)
     fclose(in);
     return valueArr;
 }
-static int toByte(char string)
+static uint8_t toByte(char* string)
 {
-    for (int i = 0; i < strlen(string); i++) {
+    uint8_t res = 0;
+    uint8_t n = 0;
+    for (int i = strlen(string) - 1; i > -1; i--) {
+        res += (uint8_t)(string[i] - '0') * pow(2, n);
+        n++;
     }
+    return res;
 }
 static void CreateCode(Value* valueArr, int sizeValueArr)
 {
@@ -160,7 +157,7 @@ static void CreateCode(Value* valueArr, int sizeValueArr)
 int encode(Value* valueArr, int sizeValueArr, char* text, uint8_t* res)
 {
     ShannonFano(&valueArr[sizeValueArr - 1], &valueArr[0]);
-    // CreateCode(valueArr, sizeValueArr);
+    CreateCode(valueArr, sizeValueArr);
     printf("----------------------------\n");
     for (int i = 0; i < sizeValueArr; i++) {
         printf("%c - %d - %s - %d - %d\n",
@@ -170,10 +167,16 @@ int encode(Value* valueArr, int sizeValueArr, char* text, uint8_t* res)
                valueArr[i].lengthCode,
                valueArr[i].code);
     }
+    int k = 0;
     for (int i = 0; i < strlen(text); i++) {
-        res[i] = findValueInArray(valueArr, sizeValueArr, text[i]);
+        for (int j = 0; j < sizeValueArr; j++) {
+            if (valueArr[j].symbol == text[i]) {
+                res[k] = valueArr[j].code;
+                k++;
+                break;
+            }
+        }
     }
-
     return 0;
 }
 void charcat(char s[], char t)
@@ -186,8 +189,6 @@ void charcat(char s[], char t)
 }
 void ShannonFano(Value* low, Value* high)
 {
-    printf("%d\n", low - high + 1);
-
     if (low - high == 0) {
         return;
     }
