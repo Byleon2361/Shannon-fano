@@ -1,23 +1,31 @@
 #pragma once
 #include <stdint.h>
 typedef struct value {
-    char symbol;
     int count;
-    int code;
-    int lengthCode;
+    char symbol;
+    char codeString[100];
+    uint8_t lengthCode;
+    uint8_t code;
 } Value;
-#define MAX_LENGTH_TEXT 1000
-// Сортировка
-void swap(Value* a, Value* b);
-void oddEvenSort(Value* arr, int size);
-int filesize(char* fileName);
-uint8_t findValueInArray(Value* valueArr, int sizeValueArr,char sym);
 
 // Commpress
 int compress(char* firstFile, char* secondFile);
 Value* writeDataStruct(
         Value* valueArr, int* sizeValueArr, char* firstFile, char* text);
-
-int writeArrayInFile(Value* arrayValue, char* firstFile, char* secondFile);
-int readArrayInFile(Value* arrayValue, char* firstFile, char* secondFile);
+uint8_t findValueInArray(Value* valueArr, int sizeValueArr, char sym);
 int encode(Value* valueArr, int sizeValueArr, char* text, uint8_t* res);
+void charcat(char s[], char t);
+void ShannonFano(Value* low, Value* high);
+Value* nextMidFunc(Value* low, Value* high, Value* mid);
+Value* midFunc(Value* low, Value* high);
+// Decommpress
+int decompress(char* firstFile, char* secondFile, char* dataFile);
+Value* readDataStruct(Value* valueArr, int* sizeValueArr, char* firstFile);
+uint8_t* readCompressFile(
+        Value* valueArr, int sizeValueArr, uint8_t* compressData, char* file);
+char* decode(
+        Value* valueArr,
+        int sizeValueArr,
+        char* text,
+        uint8_t* compressData,
+        int sizeCompress);

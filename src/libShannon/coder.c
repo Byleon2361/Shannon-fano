@@ -5,13 +5,13 @@
 #include <string.h>
 
 #include <libShannon/coder.h>
-void swap(Value* a, Value* b)
+static void swap(Value* a, Value* b)
 {
     Value tmp = *a;
     *a = *b;
     *b = tmp;
 }
-void oddEvenSort(Value* arr, int size)
+static void oddEvenSort(Value* arr, int size)
 {
     int sorted = 0;
     do {
@@ -32,7 +32,7 @@ void oddEvenSort(Value* arr, int size)
     } while (sorted);
 }
 
-int filesize(char* fileName)
+static int filesize(char* fileName)
 {
     FILE* in = fopen(fileName, "r");
     if (!in) {
@@ -62,23 +62,22 @@ int compress(char* firstFile, char* secondFile)
     FILE* out;  // Результат
 
     data = fopen("data.dat", "wb");
-
     if (!data) {
         printf("\nОшибка. Не удалось открыть второй файл. ");
         return -1;
     }
-    out = fopen(secondFile, "wb");
 
+    out = fopen(secondFile, "wb");
     if (!out) {
         printf("\nОшибка. Не удалось открыть второй файл. ");
         return -1;
     }
 
-    Value* valueArr = malloc(sizeof(Value) * 100);
+    Value* valueArr = malloc(sizeof(Value));
     int sizeValueArr = 0;
     char* text = malloc(sizeof(char) * filesize(firstFile) + 1);
 
-    writeDataStruct(valueArr, &sizeValueArr, firstFile, text);
+    valueArr = writeDataStruct(valueArr, &sizeValueArr, firstFile, text);
     for (int i = 0; i < sizeValueArr; i++) {
         printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
     }
@@ -96,7 +95,7 @@ int compress(char* firstFile, char* secondFile)
     }
 
     fwrite(valueArr, sizeof(Value), sizeValueArr, data);
-    // write(codingText, sizeof(uint8_t), sizeValueArr, out);
+    fwrite(codingText, sizeof(uint8_t), strlen(text), out);
 
     free(valueArr);
     free(text);
@@ -120,7 +119,7 @@ writeDataStruct(Value* valueArr, int* sizeValueArr, char* firstFile, char* text)
 
     int isfind = false;
     while (fread(buf, sizeof(char), 1, in) == 1) {
-        Value newValue = {'\0', 0, 0};
+        Value newValue = {'\0', 0, NULL, 0};
         for (int i = 0; i < *sizeValueArr; i++) {
             if (valueArr[i].symbol == *buf) {
                 valueArr[i].count++;
@@ -133,6 +132,9 @@ writeDataStruct(Value* valueArr, int* sizeValueArr, char* firstFile, char* text)
             newValue.count++;
             valueArr[*sizeValueArr] = newValue;
             (*sizeValueArr)++;
+            valueArr = realloc(
+                    valueArr,
+                    (sizeof(Value) * (*sizeValueArr)) + sizeof(Value));
         }
         isfind = false;
         text[sizeText] = *buf;
@@ -141,38 +143,163 @@ writeDataStruct(Value* valueArr, int* sizeValueArr, char* firstFile, char* text)
     fclose(in);
     return valueArr;
 }
+static int toByte(char string)
+{
+    for (int i = 0; i < strlen(string); i++) {
+    }
+}
+static void CreateCode(Value* valueArr, int sizeValueArr)
+{
+    for (int i = 0; i < sizeValueArr; i++) {
+        valueArr[i].lengthCode
+                = strlen(valueArr[i].codeString); // Запись длины кода
+        valueArr[i].code = toByte(
+                valueArr[i].codeString); // перевод кода из текста в цифру
+    }
+}
 int encode(Value* valueArr, int sizeValueArr, char* text, uint8_t* res)
 {
+    ShannonFano(&valueArr[sizeValueArr - 1], &valueArr[0]);
+    // CreateCode(valueArr, sizeValueArr);
+    printf("----------------------------\n");
+    for (int i = 0; i < sizeValueArr; i++) {
+        printf("%c - %d - %s - %d - %d\n",
+               valueArr[i].symbol,
+               valueArr[i].count,
+               valueArr[i].codeString,
+               valueArr[i].lengthCode,
+               valueArr[i].code);
+    }
     for (int i = 0; i < strlen(text); i++) {
         res[i] = findValueInArray(valueArr, sizeValueArr, text[i]);
     }
 
-        return 0;
+    return 0;
 }
-int decompress(Value* valueArr, char* firstFile, char* secondFile)
+void charcat(char s[], char t)
 {
-    FILE* in;
-    FILE* out;
-    in = fopen(firstFile, "rb");
-    if (!in) {
-        printf("\nОшибка. Не удалось открыть первый файл. ");
-        return -1;
+    int i = 0;
+    while (s[i] != '\0')
+        i++;
+    s[i++] = t;
+    s[i++] = '\0';
+}
+void ShannonFano(Value* low, Value* high)
+{
+    printf("%d\n", low - high + 1);
+
+    if (low - high == 0) {
+        return;
+    }
+    Value* mid = midFunc(low, high);
+    Value* nextMid = nextMidFunc(low, high, mid);
+    int i = 0;
+    for (; high[i].symbol != mid->symbol; i++) {
+        charcat(high[i].codeString, '0');
+    }
+    int j = 0;
+    for (j = i; high[j].symbol != low->symbol; j++) {
+        charcat(high[j].codeString, '1');
+    }
+    charcat(high[j].codeString, '1');
+    ShannonFano(low, mid);
+    ShannonFano(nextMid, high);
+}
+// Поиск середины
+Value* midFunc(Value* low, Value* high)
+{
+    int all = 0;
+    int half = 0;
+    for (int i = 0; i < low - high + 1; i++) {
+        all += high[i].count;
+    }
+    for (int i = 0; i < low - high + 1; i++) {
+        if (half >= all / 2)
+            return &high[i];
+        half += high[i].count;
     }
 
-    out = fopen(secondFile, "w");
+    return &high[0]; // Поменять
+}
+Value* nextMidFunc(Value* low, Value* high, Value* mid)
+{
+    for (int i = 0; i < low - high; i++) {
+        if (high[i].symbol == mid->symbol)
+            return &high[i - 1];
+    }
 
+    return &high[0];
+}
+int decompress(char* firstFile, char* secondFile, char* dataFile)
+{
+    FILE* out;
+
+    out = fopen(secondFile, "w");
     if (!out) {
         printf("\nОшибка. Не удалось открыть второй файл. ");
         return -1;
     }
+
+    Value* valueArr = malloc(sizeof(Value) * 256);
     int sizeValueArr = 0;
-    while (fread(&valueArr[sizeValueArr], sizeof(Value), 1, in) == 1)
-        sizeValueArr++;
+
+    readDataStruct(valueArr, &sizeValueArr, dataFile);
 
     for (int i = 0; i < sizeValueArr; i++) {
         printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
     }
-    fclose(in);
+    int sizeCompress = filesize(firstFile);
+    uint8_t* compressData = malloc(sizeof(char) * sizeCompress + 1);
+    printf("-------------------------------------------------------\n");
+    readCompressFile(valueArr, sizeValueArr, compressData, firstFile);
+    for (int i = 0; i < filesize(firstFile); i++) {
+        printf("%d\n", compressData[i]);
+    }
+
+    char* text = malloc(sizeof(char) * 256);
+    // decode(valueArr, sizeValueArr, text, compressData, sizeCompress);
     fclose(out);
     return 0;
 }
+Value* readDataStruct(Value* valueArr, int* sizeValueArr, char* dataFile)
+{
+    FILE* data = fopen(dataFile, "rb");
+    if (!data) {
+        printf("\nОшибка. Не удалось открыть второй файл. ");
+        return NULL;
+    }
+    while (fread(&valueArr[*sizeValueArr], sizeof(Value), 1, data) == 1)
+        (*sizeValueArr)++;
+
+    fclose(data);
+    return valueArr;
+}
+
+// Возможно, это не работает
+uint8_t* readCompressFile(
+        Value* valueArr, int sizeValueArr, uint8_t* compressData, char* file)
+{
+    uint8_t buf[1] = {0};
+    FILE* in = fopen(file, "rb");
+    if (!in) {
+        printf("\nОшибка. Не удалось открыть первый файл. ");
+        return NULL;
+    }
+    for (size_t i = 0; fread(buf, sizeof(uint8_t), 1, in) == 1; i++) {
+        compressData[i] = *buf;
+    }
+
+    return compressData;
+}
+/*
+char* decode(Value* valueArr,int sizeValueArr,char* text,uint8_t*
+compressData,int sizeCompress)
+{
+    int krat = 1;
+    for (int i = 0; i < sizeCompress; i++) {
+        text[i] =
+    }
+
+    return text;
+}
+*/
