@@ -109,15 +109,15 @@ int compress(char *firstFile, char *secondFile)
 
     uint8_t *codingText = calloc(strlen(text), sizeof(uint8_t));
     encode(valueArr, sizeValueArr, text, codingText);
-    /*
+
     printf("----------------------------------------------\n");
-    for (int i = 0; i < strlen(text); i++)
+    for (int i = 0; i < strlen(codingText); i++)
     {
         printf("%d\n", codingText[i]);
     }
-*/
+
     fwrite(valueArr, sizeof(Value), sizeValueArr, data);
-    fwrite(codingText, sizeof(uint8_t), strlen(text), out);
+    fwrite(codingText, sizeof(uint8_t), strlen(codingText) + 1, out);
     fclose(data);
     fclose(out);
 
@@ -136,11 +136,10 @@ Value *createDataStruct(Value *valueArr, int *sizeValueArr, char *firstFile, cha
         printf("\nОшибка. Не удалось открыть первый файл. ");
         return NULL;
     }
-
     int isfind = false;
     while (fread(buf, sizeof(char), 1, in) == 1)
     {
-        Value newValue = {0, 0, 0, 0, 0};
+        Value newValue = {0, 0, 0, 0, 0, 0};
         for (int i = 0; i < *sizeValueArr; i++)
         {
             if (valueArr[i].symbol == *buf)
@@ -213,10 +212,12 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
                     tempValue <<= 8 - shift;
                     tempValue >>= 8 - shift;
                     *res |= tempValue;
+                    valueArr[0].sizeString += 1 * valueArr[j].lengthCode; //
                     break;
                 }
                 *res <<= temp;
                 *res |= valueArr[j].code;
+                valueArr[0].sizeString += 1 * valueArr[j].lengthCode; //
                 break;
             }
         }

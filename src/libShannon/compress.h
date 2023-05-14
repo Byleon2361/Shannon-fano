@@ -8,6 +8,7 @@ typedef struct value
     char codeString[100];
     uint8_t lengthCode;
     uint8_t code;
+    int sizeString;
 } Value;
 
 int filesize(char *fileName);

@@ -39,6 +39,6 @@ int main(int argc, char *argv[])
         printf("Введен неверный ключ\n");
     */
     compress("file.txt", "file.sfc");
-    //decompress("file.sfc", "res.txt", "data.dat");
+    decompress("file.sfc", "res.txt", "data.dat");
     return 0;
 }

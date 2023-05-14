@@ -85,20 +85,41 @@ uint8_t *readCompressFile(Value *valueArr, int sizeValueArr, uint8_t *compressDa
 char *decode(Value *valueArr, int sizeValueArr, char *text, uint8_t *compressData, int sizeCompress)
 {
     int krat = 2;
-    for (int i = 0; i < sizeCompress; i++)
+    int shift = 0;
+    int length = 0;
+    int a = 1;
+    int k = 0;
+    int q = 0;
+    uint8_t newCode = 0;
+    uint8_t temp = 0;
+    for (int i = 0; i < valueArr[0].sizeString; i++)
     {
         if (i % 10 == 0)
         {
             text = realloc(text, sizeof(char) * 10 * krat);
             krat++;
         }
+        newCode <<= 1;
+        if (i % 8 == 0 && i != 0)
+        {
+            q++;
+            shift = 0;
+        }
+        temp = compressData[q] << shift;
+        newCode |= (temp >> 7);
         for (int j = 0; j < sizeValueArr; j++)
         {
-            if (compressData[i] == valueArr[j].code)
-                text[i] = valueArr[j].symbol;
+            if (newCode == valueArr[j].code)
+            {
+                text[k] = valueArr[j].symbol;
+                newCode = 0;
+                k++;
+                break;
+            }
         }
+        shift++;
     }
-    text[sizeCompress] = '\0';
+    text[k] = '\0';
 
     return text;
 }
