@@ -107,14 +107,15 @@ int compress(char *firstFile, char *secondFile)
         printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
     }
 
-    uint8_t *codingText = malloc(sizeof(uint8_t) * strlen(text));
+    uint8_t *codingText = calloc(strlen(text), sizeof(uint8_t));
     encode(valueArr, sizeValueArr, text, codingText);
+    /*
     printf("----------------------------------------------\n");
     for (int i = 0; i < strlen(text); i++)
     {
         printf("%d\n", codingText[i]);
     }
-
+*/
     fwrite(valueArr, sizeof(Value), sizeValueArr, data);
     fwrite(codingText, sizeof(uint8_t), strlen(text), out);
     fclose(data);
@@ -190,15 +191,32 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
                valueArr[i].lengthCode,
                valueArr[i].code);
     }
-    int k = 0;
+    uint8_t shift = 0;
+    uint8_t temp = 0;
+    uint8_t tempValue = 0;
     for (int i = 0; i < strlen(text); i++)
     {
         for (int j = 0; j < sizeValueArr; j++)
         {
             if (valueArr[j].symbol == text[i])
             {
-                res[k] = valueArr[j].code;
-                k++;
+                temp = valueArr[j].lengthCode;
+                shift += temp;
+                if (shift > 8)
+                {
+                    shift -= 8;
+                    temp -= shift;
+                    *res <<= temp;
+                    *res |= valueArr[j].code >> shift;
+                    res++;
+                    tempValue = valueArr[j].code;
+                    tempValue <<= 8 - shift;
+                    tempValue >>= 8 - shift;
+                    *res |= tempValue;
+                    break;
+                }
+                *res <<= temp;
+                *res |= valueArr[j].code;
                 break;
             }
         }
@@ -209,6 +227,12 @@ void ShannonFano(Value *low, Value *high)
 {
     if (low - high == 0)
     {
+        return;
+    }
+    if (low - high == 1)
+    {
+        charcat(high->codeString, '0');
+        charcat(low->codeString, '1');
         return;
     }
     Value *mid = midFunc(low, high);
@@ -232,6 +256,10 @@ Value *midFunc(Value *low, Value *high)
 {
     int all = 0;
     int half = 0;
+    if (low - high == 2)
+    {
+        return &high[1];
+    }
     for (int i = 0; i < low - high + 1; i++)
     {
         all += high[i].count;
