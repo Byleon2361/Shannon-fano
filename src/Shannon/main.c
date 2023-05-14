@@ -4,7 +4,7 @@
 
 #include <libShannon/compress.h>
 #include <libShannon/decompress.h>
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     /*
     if (argc != 5)
@@ -13,32 +13,32 @@ int main(int argc, char* argv[])
         return 0;
     }
     const char *command = argv[1]; // Команда  -c - copmress; -d - decompress
-    const char *output = argv[2];  // -o - Указывает на имя выходного файла
-    const char *firstFile = argv[3];
-    const char *secondFile = argv[4];
+    const char *first = argv[2];   // -o - Указывает на имя выходного файла
+    const char *second = argv[3];
+    const char *third = argv[4];
 
     if (strcmp(command, "-c") == 0)
     {
-
-        if (compress_file(firstFile, secondFile) != 0)
-        {
-            printf("Не удалось откыть файлы\n");
-        }
+        if (strcmp(first, "-o") == 0)
+            compress(third, second);
+        else if (strcmp(second, "-o") == 0)
+            compress(first, third);
+        else
+            printf("Введен неверный ключ\n");
     }
     else if (strcmp(command, "-d") == 0)
     {
-        if (decompress_file(firstFile, secondFile) != 0)
-        {
-            printf("Не удалось откыть файлы\n");
-        }
+        if (strcmp(first, "-o") == 0)
+            decompress(third, second, "data.dat");
+        else if (strcmp(second, "-o") == 0)
+            decompress(first, third, "data.dat");
+        else
+            printf("Введен неверный ключ\n");
     }
     else
-    {
-        pritnf("Введен неверный ключ\n");
-    }
+        printf("Введен неверный ключ\n");
     */
-
-    // compress("file.txt", "file.sfc");
-    decompress("file.sfc", "res.txt", "data.dat");
+    compress("file.txt", "file.sfc");
+    //decompress("file.sfc", "res.txt", "data.dat");
     return 0;
 }
