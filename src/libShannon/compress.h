@@ -1,7 +1,8 @@
 #pragma once
 #include <stdint.h>
 
-typedef struct value {
+typedef struct value
+{
     int count;
     char symbol;
     char codeString[100];
@@ -9,11 +10,11 @@ typedef struct value {
     uint8_t code;
 } Value;
 
+int filesize(char *fileName);
 // Commpress
-int compress(char* firstFile, char* secondFile);
-Value* writeDataStruct(
-        Value* valueArr, int* sizeValueArr, char* firstFile, char* text);
-int encode(Value* valueArr, int sizeValueArr, char* text, uint8_t* res);
-void ShannonFano(Value* low, Value* high);
-Value* midFunc(Value* low, Value* high);
-Value* nextMidFunc(Value* low, Value* high, Value* mid);
+int compress(char *firstFile, char *secondFile);
+Value *createDataStruct(Value *valueArr, int *sizeValueArr, char *firstFile, char *text);
+int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res);
+void ShannonFano(Value *low, Value *high);
+Value *midFunc(Value *low, Value *high);
+Value *nextMidFunc(Value *low, Value *high, Value *mid);

@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     }
     */
 
-    compress("file.txt", "file.sfc");
-    // decompress("file.sfc", "res.txt", "data.dat");
+    // compress("file.txt", "file.sfc");
+    decompress("file.sfc", "res.txt", "data.dat");
     return 0;
 }
