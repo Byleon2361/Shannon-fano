@@ -53,13 +53,13 @@ int filesize(char *fileName)
     fclose(in);
     return size;
 }
-static uint8_t toByte(char *string)
+static int toByte(char *string)
 {
-    uint8_t res = 0;
-    uint8_t n = 0;
+    int res = 0;
+    int n = 0;
     for (int i = strlen(string) - 1; i > -1; i--)
     {
-        res += (uint8_t)(string[i] - '0') * pow(2, n);
+        res += (int)(string[i] - '0') * pow(2, n);
         n++;
     }
     return res;
@@ -96,24 +96,15 @@ int compress(char *firstFile, char *secondFile)
     char *text = malloc(sizeof(char) * filesize(firstFile) + 1);
 
     valueArr = createDataStruct(valueArr, &sizeValueArr, firstFile, text);
-    for (int i = 0; i < sizeValueArr; i++)
-    {
-        printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
-    }
-    printf("----------------------------------------------\n");
-    oddEvenSort(valueArr, sizeValueArr);
-    for (int i = 0; i < sizeValueArr; i++)
-    {
-        printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
-    }
 
+    oddEvenSort(valueArr, sizeValueArr);
+    
     uint8_t *codingText = calloc(strlen(text), sizeof(uint8_t));
     encode(valueArr, sizeValueArr, text, codingText);
 
-    printf("----------------------------------------------\n");
-    for (int i = 0; i < strlen(codingText); i++)
+    for (int i = 0; i < sizeValueArr; i++)
     {
-        printf("%d\n", codingText[i]);
+        printf("%c - %d - %s\n", valueArr[i].symbol, valueArr[i].count, valueArr[i].codeString);
     }
 
     fwrite(valueArr, sizeof(Value), sizeValueArr, data);
@@ -180,16 +171,6 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
 {
     ShannonFano(&valueArr[sizeValueArr - 1], &valueArr[0]);
     CreateCode(valueArr, sizeValueArr);
-    printf("----------------------------\n");
-    for (int i = 0; i < sizeValueArr; i++)
-    {
-        printf("%c - %d - %s - %d - %d\n",
-               valueArr[i].symbol,
-               valueArr[i].count,
-               valueArr[i].codeString,
-               valueArr[i].lengthCode,
-               valueArr[i].code);
-    }
     uint8_t shift = 0;
     uint8_t temp = 0;
     uint8_t tempValue = 0;
@@ -212,15 +193,17 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
                     tempValue <<= 8 - shift;
                     tempValue >>= 8 - shift;
                     *res |= tempValue;
-                    valueArr[0].sizeString += 1 * valueArr[j].lengthCode; //
                     break;
                 }
                 *res <<= temp;
                 *res |= valueArr[j].code;
-                valueArr[0].sizeString += 1 * valueArr[j].lengthCode; //
                 break;
             }
         }
+    }
+    if (shift != 0)
+    {
+        *res <<= shift;
     }
     return 0;
 }

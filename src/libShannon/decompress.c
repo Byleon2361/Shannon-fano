@@ -22,29 +22,15 @@ int decompress(char *firstFile, char *secondFile, char *dataFile)
 
     readDataStruct(valueArr, &sizeValueArr, dataFile);
 
-    for (int i = 0; i < sizeValueArr; i++)
-    {
-        printf("%c - %d\n", valueArr[i].symbol, valueArr[i].count);
-    }
     int sizeCompress = filesize(firstFile);
     uint8_t *compressData = malloc(sizeof(char) * sizeCompress + 1);
-    printf("-------------------------------------------------------\n");
     readCompressFile(valueArr, sizeValueArr, compressData, firstFile);
-    for (int i = 0; i < filesize(firstFile); i++)
-    {
-        printf("%d\n", compressData[i]);
-    }
 
     char *text = malloc(sizeof(char) * 10);
     text = decode(valueArr, sizeValueArr, text, compressData, sizeCompress);
 
     fprintf(out, "%s", text);
-    /*
-        for (int i = 0; i < strlen(text); i++)
-        {
-            fwrite(text, sizeof(char), 1, out);
-        }
-    */
+
     fclose(out);
 
     free(compressData);
@@ -91,8 +77,14 @@ char *decode(Value *valueArr, int sizeValueArr, char *text, uint8_t *compressDat
     int k = 0;
     int q = 0;
     uint8_t newCode = 0;
+    uint8_t newCodeLength = 0;
     uint8_t temp = 0;
-    for (int i = 0; i < valueArr[0].sizeString; i++)
+    int size = 0;
+    for (size_t i = 0; i < sizeValueArr; i++)
+    {
+        size += strlen(valueArr[i].codeString) * valueArr[i].count;
+    }
+    for (int i = 0; i < size; i++)
     {
         if (i % 10 == 0)
         {
@@ -100,6 +92,7 @@ char *decode(Value *valueArr, int sizeValueArr, char *text, uint8_t *compressDat
             krat++;
         }
         newCode <<= 1;
+        newCodeLength++;
         if (i % 8 == 0 && i != 0)
         {
             q++;
@@ -109,11 +102,12 @@ char *decode(Value *valueArr, int sizeValueArr, char *text, uint8_t *compressDat
         newCode |= (temp >> 7);
         for (int j = 0; j < sizeValueArr; j++)
         {
-            if (newCode == valueArr[j].code)
+            if ((newCode == valueArr[j].code) && (newCodeLength == strlen(valueArr[j].codeString)))
             {
                 text[k] = valueArr[j].symbol;
                 newCode = 0;
                 k++;
+                newCodeLength = 0;
                 break;
             }
         }
