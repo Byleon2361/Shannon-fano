@@ -72,15 +72,13 @@ char *decode(Value *valueArr, int sizeValueArr, char *text, uint8_t *compressDat
 {
     int krat = 2;
     int shift = 0;
-    int length = 0;
-    int a = 1;
     int k = 0;
     int q = 0;
-    uint8_t newCode = 0;
+    int newCode = 0;
     uint8_t newCodeLength = 0;
     uint8_t temp = 0;
     int size = 0;
-    for (size_t i = 0; i < sizeValueArr; i++)
+    for (int i = 0; i < sizeValueArr; i++)
     {
         size += strlen(valueArr[i].codeString) * valueArr[i].count;
     }

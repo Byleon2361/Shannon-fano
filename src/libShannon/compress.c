@@ -98,7 +98,6 @@ int compress(char *firstFile, char *secondFile)
     valueArr = createDataStruct(valueArr, &sizeValueArr, firstFile, text);
 
     oddEvenSort(valueArr, sizeValueArr);
-    
     uint8_t *codingText = calloc(strlen(text), sizeof(uint8_t));
     encode(valueArr, sizeValueArr, text, codingText);
 
@@ -106,9 +105,14 @@ int compress(char *firstFile, char *secondFile)
     {
         printf("%c - %d - %s\n", valueArr[i].symbol, valueArr[i].count, valueArr[i].codeString);
     }
-
     fwrite(valueArr, sizeof(Value), sizeValueArr, data);
-    fwrite(codingText, sizeof(uint8_t), strlen(codingText) + 1, out);
+
+    int size = 0;
+    for (int i = 0; i < sizeValueArr; i++)
+    {
+        size += strlen(valueArr[i].codeString) * valueArr[i].count;
+    }
+    fwrite(codingText, sizeof(uint8_t), (size / 8) + 2, out);
     fclose(data);
     fclose(out);
 
@@ -173,7 +177,7 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
     CreateCode(valueArr, sizeValueArr);
     uint8_t shift = 0;
     uint8_t temp = 0;
-    uint8_t tempValue = 0;
+    int tempValue = 0;
     for (int i = 0; i < strlen(text); i++)
     {
         for (int j = 0; j < sizeValueArr; j++)
@@ -201,10 +205,12 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
             }
         }
     }
+
     if (shift != 0)
     {
-        *res <<= shift;
+        *res <<= 8 - shift;
     }
+
     return 0;
 }
 void ShannonFano(Value *low, Value *high)

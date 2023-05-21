@@ -7,7 +7,7 @@ typedef struct value
     char symbol;
     char codeString[100];
     uint8_t lengthCode;
-    uint8_t code;
+    int code;
 } Value;
 
 int filesize(char *fileName);
