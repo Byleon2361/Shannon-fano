@@ -5,8 +5,7 @@ typedef struct value
 {
     int count;
     char symbol;
-    char codeString[100];
-    uint8_t lengthCode;
+    char codeString[32];
     int code;
 } Value;
 

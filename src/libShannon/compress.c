@@ -165,7 +165,6 @@ static void CreateCode(Value *valueArr, int sizeValueArr)
 {
     for (int i = 0; i < sizeValueArr; i++)
     {
-        valueArr[i].lengthCode = strlen(valueArr[i].codeString); // Запись длины кода
         valueArr[i].code = toByte(
             valueArr[i].codeString); // перевод кода из текста в цифру
     }
@@ -185,7 +184,7 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
         {
             if (valueArr[j].symbol == text[i])
             {
-                temp = valueArr[j].lengthCode;
+                temp = strlen(valueArr[j].codeString);
                 shift += temp;
                 while (shift > 8)
                 {
