@@ -177,7 +177,8 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
     CreateCode(valueArr, sizeValueArr);
     uint8_t shift = 0;
     uint8_t temp = 0;
-    int tempValue = 0;
+    uint8_t tempValue = 0;
+    int is = 1;
     for (int i = 0; i < strlen(text); i++)
     {
         for (int j = 0; j < sizeValueArr; j++)
@@ -186,7 +187,7 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
             {
                 temp = valueArr[j].lengthCode;
                 shift += temp;
-                if (shift > 8)
+                while (shift > 8)
                 {
                     shift -= 8;
                     temp -= shift;
@@ -197,10 +198,16 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
                     tempValue <<= 8 - shift;
                     tempValue >>= 8 - shift;
                     *res |= tempValue;
-                    break;
+                    is = 0;
+                    // break;
                 }
-                *res <<= temp;
-                *res |= valueArr[j].code;
+                if (is)
+                {
+                    *res <<= temp;
+                    *res |= valueArr[j].code;
+                }
+
+                is = 1;
                 break;
             }
         }
