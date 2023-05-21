@@ -1,6 +1,6 @@
 
-APP_NAME = Shannon
-LIB_NAME = libShannon
+APP_NAME = ShannonFano
+LIB_NAME = libShannonFano
 
 CFLAGS = -Wall -g -O0
 DOPFLAGS = -I src -MMD
