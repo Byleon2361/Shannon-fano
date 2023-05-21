@@ -1,5 +1,5 @@
 #pragma once
-#include <libShannonFano/compress.h>
+#include <libShannon/compress.h>
 int decompress(char *firstFile, char *secondFile, char *dataFile);
 Value *readDataStruct(Value *valueArr, int *sizeValueArr, char *dataFile);
 uint8_t *readCompressFile(Value *valueArr, int sizeValueArr, uint8_t *compressData, char *file);

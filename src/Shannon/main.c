@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libShannonFano/compress.h>
-#include <libShannonFano/decompress.h>
+#include <libShannon/compress.h>
+#include <libShannon/decompress.h>
 int main(int argc, char *argv[])
 {
     /*

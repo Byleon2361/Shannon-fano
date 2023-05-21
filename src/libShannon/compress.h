@@ -9,9 +9,11 @@ typedef struct value
     char symbol;
 } Value;
 
+void oddEvenSort(Value *arr, int size);
+int toByte(char *string);
 int filesize(char *fileName);
 // Commpress
-int compress(char *firstFile, char *secondFile);
+void compress(char *firstFile, char *secondFile);
 Value *createDataStruct(Value *valueArr, int *sizeValueArr, char *firstFile, char *text);
 int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res);
 void ShannonFano(Value *low, Value *high);

@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libShannonFano/decompress.h>
-#include <libShannonFano/compress.h>
+#include <libShannon/decompress.h>
+#include <libShannon/compress.h>
 int decompress(char *firstFile, char *secondFile, char *dataFile)
 {
     FILE *out;
@@ -13,8 +13,8 @@ int decompress(char *firstFile, char *secondFile, char *dataFile)
     out = fopen(secondFile, "w");
     if (!out)
     {
-        printf("\nОшибка. Не удалось открыть второй файл. ");
-        return -1;
+        printf("\nОшибка. Не удалось открыть файл для записи декодированного текста. ");
+        exit(1);
     }
 
     Value *valueArr = malloc(sizeof(Value) * 256);
@@ -43,8 +43,8 @@ Value *readDataStruct(Value *valueArr, int *sizeValueArr, char *dataFile)
     FILE *data = fopen(dataFile, "rb");
     if (!data)
     {
-        printf("\nОшибка. Не удалось открыть второй файл. ");
-        return NULL;
+        printf("\nОшибка. Не удалось открыть файл для прочтения структуры данных. ");
+        exit(1);
     }
     while (fread(&valueArr[*sizeValueArr], sizeof(Value), 1, data) == 1)
         (*sizeValueArr)++;
@@ -58,14 +58,14 @@ uint8_t *readCompressFile(Value *valueArr, int sizeValueArr, uint8_t *compressDa
     FILE *in = fopen(file, "rb");
     if (!in)
     {
-        printf("\nОшибка. Не удалось открыть первый файл. ");
-        return NULL;
+        printf("\nОшибка. Не удалось открыть файл для прочтения сжатого текста. ");
+        exit(1);
     }
     for (int i = 0; fread(buf, sizeof(uint8_t), 1, in) == 1; i++)
     {
         compressData[i] = *buf;
     }
-
+    fclose(in);
     return compressData;
 }
 char *decode(Value *valueArr, int sizeValueArr, char *text, uint8_t *compressData, int sizeCompress)

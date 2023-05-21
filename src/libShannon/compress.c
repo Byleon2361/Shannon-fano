@@ -5,14 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libShannonFano/compress.h>
+#include <libShannon/compress.h>
 static void swap(Value *a, Value *b)
 {
     Value tmp = *a;
     *a = *b;
     *b = tmp;
 }
-static void oddEvenSort(Value *arr, int size)
+void oddEvenSort(Value *arr, int size)
 {
     int sorted = 0;
     do
@@ -42,8 +42,8 @@ int filesize(char *fileName)
     FILE *in = fopen(fileName, "r");
     if (!in)
     {
-        printf("\nОшибка. Не удалось открыть первый файл. ");
-        return -1;
+        printf("\nОшибка. Не удалось открыть файл. ");
+        exit(1);
     }
 
     fseek(in, 0L, SEEK_END);
@@ -53,14 +53,19 @@ int filesize(char *fileName)
     fclose(in);
     return size;
 }
-static int toByte(char *string)
+int toByte(char *string)
 {
     int res = 0;
     int n = 0;
     for (int i = strlen(string) - 1; i > -1; i--)
     {
-        res += (int)(string[i] - '0') * pow(2, n);
-        n++;
+        if (string[i] == '0' || string[i] == '1')
+        {
+            res += (int)(string[i] - '0') * pow(2, n);
+            n++;
+        }
+        else
+            return -1;
     }
     return res;
 }
@@ -72,7 +77,7 @@ static void charcat(char s[], char t)
     s[i++] = t;
     s[i++] = '\0';
 }
-int compress(char *firstFile, char *secondFile)
+void compress(char *firstFile, char *secondFile)
 {
     FILE *data; // Хранит массив структур Value
     FILE *out;  // Результат
@@ -80,15 +85,15 @@ int compress(char *firstFile, char *secondFile)
     data = fopen("data.dat", "wb");
     if (!data)
     {
-        printf("\nОшибка. Не удалось открыть второй файл. ");
-        return -1;
+        printf("\nОшибка. Не удалось открыть файл для записи структуры данных. ");
+        exit(1);
     }
 
     out = fopen(secondFile, "wb");
     if (!out)
     {
-        printf("\nОшибка. Не удалось открыть второй файл. ");
-        return -1;
+        printf("\nОшибка. Не удалось открыть файл для записи закодированного текста. ");
+        exit(1);
     }
 
     Value *valueArr = malloc(sizeof(Value));
@@ -119,7 +124,6 @@ int compress(char *firstFile, char *secondFile)
     free(valueArr);
     free(text);
     free(codingText);
-    return 0;
 }
 Value *createDataStruct(Value *valueArr, int *sizeValueArr, char *firstFile, char *text)
 {
@@ -128,13 +132,13 @@ Value *createDataStruct(Value *valueArr, int *sizeValueArr, char *firstFile, cha
     FILE *in = fopen(firstFile, "r");
     if (!in)
     {
-        printf("\nОшибка. Не удалось открыть первый файл. ");
-        return NULL;
+        printf("\nОшибка. Не удалось открыть исходный файл для чтения.");
+        exit(1);
     }
     int isfind = false;
     while (fread(buf, sizeof(char), 1, in) == 1)
     {
-        Value newValue = {0, 0, 0, 0, 0, 0};
+        Value newValue = {0, 0, 0, 0};
         for (int i = 0; i < *sizeValueArr; i++)
         {
             if (valueArr[i].symbol == *buf)
@@ -177,7 +181,7 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
     uint8_t shift = 0;
     uint8_t temp = 0;
     uint8_t tempValue = 0;
-    int is = 1;
+    int isCode = 1;
     for (int i = 0; i < strlen(text); i++)
     {
         for (int j = 0; j < sizeValueArr; j++)
@@ -197,26 +201,22 @@ int encode(Value *valueArr, int sizeValueArr, char *text, uint8_t *res)
                     tempValue <<= 8 - shift;
                     tempValue >>= 8 - shift;
                     *res |= tempValue;
-                    is = 0;
-                    // break;
+                    isCode = 0;
                 }
-                if (is)
+                if (isCode)
                 {
                     *res <<= temp;
                     *res |= valueArr[j].code;
                 }
-
-                is = 1;
+                isCode = 1;
                 break;
             }
         }
     }
-
     if (shift != 0)
     {
         *res <<= 8 - shift;
     }
-
     return 0;
 }
 void ShannonFano(Value *low, Value *high)
