@@ -6,7 +6,6 @@
 #include <libShannon/decompress.h>
 int main(int argc, char *argv[])
 {
-    /*
     if (argc != 5)
     {
         puts("The number of arguments passed must be three");
@@ -37,8 +36,8 @@ int main(int argc, char *argv[])
     }
     else
         printf("Введен неверный ключ\n");
-    */
-    compress("file.txt", "file.sfc");
-    decompress("file.sfc", "res.txt", "data.dat");
+
+    // compress("file.txt", "file.sfc");
+    // decompress("file.sfc", "res.txt", "data.dat");
     return 0;
 }
